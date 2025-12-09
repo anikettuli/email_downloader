@@ -1,0 +1,36 @@
+accounts:
+  - service: gmail
+    email: your_email@gmail.com
+    password: "your_app_password"  # Generate at https://myaccount.google.com/apppasswords
+    host: imap.gmail.com
+    folders: ["INBOX"]
+
+  - service: outlook
+    email: your_email@outlook.com
+    password: "your_app_password"
+    host: imap-mail.outlook.com
+    folders: ["INBOX"]
+    
+  - service: yahoo
+    email: your_email@yahoo.com
+    password: "your_app_password" # Generate specific app password
+    host: imap.mail.yahoo.com
+    folders: ["INBOX"]
+
+download_path: "~/Downloads/EmailAttachments"
+allowed_extensions:
+  - pdf
+  - doc
+  - docx
+  - jpg
+  - jpeg
+  - png
+  - xls
+  - xlsx
+  - zip
+  - csv
+
+# Time window in hours to look back for emails on each run.
+# Set to 0 to check all unread (or all messages if configured) - NOT RECOMMENDED for large inboxes.
+# Recommended: 24 (checks last 24 hours of mail) or similar if running hourly.
+lookback_hours: 48

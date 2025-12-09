@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Distribution / Build
+build/
+dist/
+*.spec
+*.app
+*.dmg
+
+# OS
+.DS_Store
+
+# User Specific
+credentials.json
+token.pickle
+email_downloader_source.zip
+.history.json
+*.log

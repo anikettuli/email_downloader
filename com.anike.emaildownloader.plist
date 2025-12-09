@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.anike.emaildownloader</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/home/anike/.gemini/antigravity/scratch/email_downloader/venv/bin/python</string>
+        <string>/home/anike/.gemini/antigravity/scratch/email_downloader/src/main.py</string>
+        <string>--config</string>
+        <string>/home/anike/.gemini/antigravity/scratch/email_downloader/config.yaml</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>3600</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>WorkingDirectory</key>
+    <string>/home/anike/.gemini/antigravity/scratch/email_downloader</string>
+    <key>StandardErrorPath</key>
+    <string>/home/anike/.gemini/antigravity/scratch/email_downloader/downloader_error.log</string>
+    <key>StandardOutPath</key>
+    <string>/home/anike/.gemini/antigravity/scratch/email_downloader/downloader_output.log</string>
+</dict>
+</plist>
