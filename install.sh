@@ -12,8 +12,9 @@ if [ ! -d "venv" ]; then
 fi
 
 source venv/bin/activate
-echo "Installing dependencies..."
-pip install -r requirements.txt
+echo "Installing dependencies using pip3..."
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
 
 # 2. Check Configuration
 if [ ! -f "config.yaml" ]; then

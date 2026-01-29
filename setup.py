@@ -3,9 +3,7 @@ import os
 import glob
 
 APP = ["src/gui.py"]
-DATA_FILES = [
-    ("models", ["models/gemma-3-270m-it-Q4_K_M.gguf"]),
-]
+DATA_FILES = []
 OPTIONS = {
     "argv_emulation": True,
     "iconfile": "app_icon.icns",

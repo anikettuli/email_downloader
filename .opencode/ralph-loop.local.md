@@ -1,20 +1,13 @@
 ---
-active: false
-iteration: 5
+active: true
+iteration: 3
 maxIterations: 100
+sessionId: ses_3f789cbb9ffeH72mo8OuvY8ytg
 ---
 
-# Ralph Loop Status
-
-Project Goal: Finalize the Email Attachment Downloader.
-
-## Progress
-- [x] Step 0: Git Setup (Branch 'ralph')
-- [x] Task 1: Intelligent Classification with Gemma 3
-- [x] Task 2: Multi-Source Mailbox Support (Gmail OAuth, Outlook IMAP, Apple Mail metadata extraction via AppleScript)
-- [x] Task 3: RAG-Ready Directory Pipeline ([Category]/[Year]/[Month])
-- [x] Task 4: UI Toggles & Logging (Sources, Categories, Reasoning Log)
-- [x] Task 5: Production Packaging (Updated setup.py, build_app.sh, plist)
-
-## Completion
-All tasks have been implemented and verified.
+- [x] Analyze current build script
+- [x] Update build_app.sh to use pip3 and move output to Desktop
+- [x] Add OS check to build_app.sh
+- [x] Ensure models are NOT bundled in setup.py (now downloaded on first run)
+- [x] Verify changes (Linux build logic verified)
+- [ ] Finalize documentation for user
