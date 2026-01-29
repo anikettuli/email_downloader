@@ -56,10 +56,15 @@ JSON:<end_of_turn>
 {{"""
         try:
             output = self.llm(
-                prompt, max_tokens=150, stop=["<end_of_turn>", "}"], echo=False
+                prompt, max_tokens=150, stop=["<end_of_turn>"], echo=False
             )
 
-            response_text = "{" + output["choices"][0]["text"].strip() + "}"
+            # We pre-filled '{' in the prompt, so model output is the rest
+            response_text = "{" + output["choices"][0]["text"].strip()
+            # If the model didn't end with }, add it
+            if not response_text.endswith("}"):
+                response_text += "}"
+
             logger.info(f"Model raw output: {response_text}")
 
             # Find the first { and last }
@@ -72,7 +77,31 @@ JSON:<end_of_turn>
                 import re
 
                 json_str = re.sub(r",\s*}", "}", json_str)
-                result = json.loads(json_str)
+                # Remove any non-JSON content that might have been picked up if multiple {} exist
+                # but we'll stick to the outer-most for now as it's the most likely intended object
+
+                try:
+                    result = json.loads(json_str)
+                except json.JSONDecodeError:
+                    # Try to handle cases where strings might contain unescaped quotes
+                    # This is a bit risky but can help with simple "reasoning" fields
+                    try:
+                        # Simple regex attempt to find key-value pairs if JSON loading fails
+                        category_match = re.search(r'"category":\s*"([^"]+)"', json_str)
+                        reasoning_match = re.search(
+                            r'"reasoning":\s*"([^"]+)"', json_str
+                        )
+                        if category_match:
+                            result = {
+                                "category": category_match.group(1),
+                                "reasoning": reasoning_match.group(1)
+                                if reasoning_match
+                                else "Parsed via regex",
+                            }
+                        else:
+                            raise ValueError("Regex parsing failed")
+                    except:
+                        raise ValueError(f"Could not parse JSON: {json_str}")
             else:
                 raise ValueError(f"Could not find JSON in response: {response_text}")
 

@@ -4,6 +4,7 @@ import time
 import logging
 import sqlite3
 import subprocess
+import tempfile
 from datetime import datetime, timedelta, date
 from pathlib import Path
 from imap_tools import MailBox, A
@@ -182,34 +183,109 @@ class AttachmentDownloader:
 
     def process_apple_mail(self, lookback_hours: int):
         """
-        Extracts attachments from Apple Mail via AppleScript (best compatibility for modern macOS).
+        Extracts attachments from Apple Mail via AppleScript.
+        Saves attachments to the same RAG-ready structure.
         """
         if os.name != "posix" or "darwin" not in os.uname().sysname.lower():
             logger.warning("Apple Mail processing is only supported on macOS.")
             return
 
-        logger.info("Scanning Apple Mail via AppleScript...")
-        # This is a simplified AppleScript approach.
-        # In a real app, you'd use Scripting Bridge or a more complex script to iterate folders.
-        script = f"""
+        logger.info(f"Scanning Apple Mail (last {lookback_hours} hours)...")
+
+        # This AppleScript finds messages with attachments and saves them to a temporary location
+        # Then we process them like IMAP attachments.
+        temp_dir = Path(tempfile.gettempdir()) / "email_downloader_apple_mail"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+
+        apple_script = f'''
         set lookbackDate to (current date) - ({lookback_hours} * hours)
+        set tempPath to "{temp_dir.as_posix()}"
+        
         tell application "Mail"
+            set resultList to {{}}
             set theMessages to (messages of inbox whose date received is greater than lookbackDate)
+            
             repeat with aMessage in theMessages
                 set msgID to id of aMessage as string
                 set msgSubject to subject of aMessage
                 set msgDate to date received of aMessage
+                
+                -- Format date as YYYY-MM-DD HH:MM:SS
+                set y to year of msgDate as integer
+                set m to month of msgDate as integer
+                set d to day of msgDate as integer
+                set t to time string of msgDate
+                set dateStr to (y as string) & "-" & (m as string) & "-" & (d as string) & " " & t
+                
                 repeat with anAttachment in mail attachments of aMessage
                     set attName to name of anAttachment
-                    log msgID & "||" & msgSubject & "||" & msgDate & "||" & attName
-                end repeat
+                    try
+                        set savePath to tempPath & "/" & msgID & "_" & attName
+                        save anAttachment in savePath
+                        set end of resultList to (msgID & "||" & msgSubject & "||" & dateStr & "||" & attName & "||" & savePath)
+                    end try
+                repeat
             end repeat
+            return resultList
         end tell
-        """
-        # Note: Actually downloading the content via AppleScript is slow and requires saving to a temp file.
-        # For this prototype, we'll simulate the metadata extraction and mention the path.
-        # A more robust version would use the sqlite index in ~/Library/Mail/V10/MailData/Envelope Index
-        pass
+        '''
+
+        try:
+            # Run AppleScript
+            proc = subprocess.run(
+                ["osascript", "-e", apple_script], capture_output=True, text=True
+            )
+            if proc.returncode != 0:
+                logger.error(f"AppleScript error: {proc.stderr}")
+                return
+
+            # osascript returns a comma-separated list of strings
+            output = proc.stdout.strip()
+            if not output:
+                return
+
+            items = output.split(", ")
+            for item in items:
+                parts = item.split("||")
+                if len(parts) < 5:
+                    continue
+
+                msg_id, subject, date_str, filename, file_path = parts
+
+                if self.history.is_processed("apple_mail", msg_id):
+                    # Clean up temp file if we already processed this message
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    continue
+
+                # Parse date
+                try:
+                    dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                except:
+                    dt = datetime.now()
+
+                # Classification
+                classification = self.classifier.classify(subject, filename)
+                category = classification.get("category", "Other")
+
+                if category in self.enabled_categories:
+                    with open(file_path, "rb") as f:
+                        payload = f.read()
+
+                    self._save_attachment("apple_mail", dt, category, filename, payload)
+
+                # Clean up and mark history
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                self.history.mark_processed("apple_mail", msg_id)
+
+        except Exception as e:
+            logger.error(f"Apple Mail processing error: {e}")
+        finally:
+            if temp_dir.exists():
+                import shutil
+
+                shutil.rmtree(temp_dir, ignore_errors=True)
 
     def _save_attachment(
         self,
