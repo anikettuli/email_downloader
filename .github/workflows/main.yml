@@ -1,0 +1,15 @@
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.14'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Build App
+        run: ./build_app.sh
+      - name: Create DMG
+        run: brew install create-dmg && create-dmg dist/EmailDownloader.app
