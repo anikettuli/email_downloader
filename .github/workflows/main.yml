@@ -1,15 +1,65 @@
+name: Build macOS Installer
+
+on:
+  push:
+    branches:
+      - ralph
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: macos-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Build App
-        run: ./build_app.sh
-      - name: Create DMG
-        run: brew install create-dmg && create-dmg dist/EmailDownloader.app
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          # Ensure packaging tools are present
+          pip install py2app
+
+      - name: Setup Build Environment
+        run: |
+          chmod +x build_app.sh
+          # Ensure the app icon is in the root as expected by setup.py
+          if [ ! -f "app_icon.icns" ]; then
+            echo "Warning: app_icon.icns not found."
+          fi
+
+      - name: Build macOS App Bundle
+        run: |
+          # Executes the py2app build sequence defined in build_app.sh
+          ./build_app.sh
+
+      - name: Package as DMG
+        run: |
+          brew install create-dmg
+          mkdir -p dist/dmg
+          # Create a professional DMG installer with an Applications link
+          create-dmg \
+            --volname "EmailDownloader" \
+            --volicon "app_icon.icns" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "EmailDownloader.app" 200 190 \
+            --hide-extension "EmailDownloader.app" \
+            --app-drop-link 600 185 \
+            "dist/dmg/EmailDownloader-Installer.dmg" \
+            "dist/EmailDownloader.app"
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EmailDownloader-macOS-Installer
+          path: dist/dmg/EmailDownloader-Installer.dmg
+          if-no-files-found: error
