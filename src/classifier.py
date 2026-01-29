@@ -13,7 +13,7 @@ class AttachmentClassifier:
     """Classifies email attachments using llama.cpp CLI with a local GGUF model."""
 
     # llama.cpp release version to download
-    LLAMA_VERSION = "b5046"
+    LLAMA_VERSION = "b7870"
     
     def __init__(self, model_path=None):
         # Determine base paths
@@ -86,7 +86,7 @@ class AttachmentClassifier:
             logger.error(f"Unsupported platform: {system}")
             return False
         
-        url = f"https://github.com/ggerganov/llama.cpp/releases/download/{self.LLAMA_VERSION}/{archive_name}"
+        url = f"https://github.com/ggml-org/llama.cpp/releases/download/{self.LLAMA_VERSION}/{archive_name}"
         binary_path = self._get_llama_binary_path()
         
         logger.info(f"Downloading llama.cpp binary from {url}...")

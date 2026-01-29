@@ -29,19 +29,19 @@ jobs:
 
       - name: Download llama.cpp binaries
         run: |
-          LLAMA_VERSION="b5046"
+          LLAMA_VERSION="b7870"
           mkdir -p bin
           
           # Download ARM64 binary for Apple Silicon
           echo "Downloading llama.cpp ARM64 binary..."
-          curl -L "https://github.com/ggerganov/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-arm64.tar.gz" \
+          curl -fL "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-arm64.tar.gz" \
             -o /tmp/llama-arm64.tar.gz
           tar -xzf /tmp/llama-arm64.tar.gz -C /tmp
           cp /tmp/build/bin/llama-cli bin/llama-cli-arm64
           
           # Download x64 binary for Intel Macs
           echo "Downloading llama.cpp x64 binary..."
-          curl -L "https://github.com/ggerganov/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-x64.tar.gz" \
+          curl -fL "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-x64.tar.gz" \
             -o /tmp/llama-x64.tar.gz
           tar -xzf /tmp/llama-x64.tar.gz -C /tmp
           cp /tmp/build/bin/llama-cli bin/llama-cli-x64
@@ -49,6 +49,7 @@ jobs:
           chmod +x bin/*
           echo "Binaries downloaded:"
           ls -la bin/
+
 
       - name: Setup Build Environment
         run: |
