@@ -22,6 +22,13 @@ class AttachmentClassifier:
             self.models_dir = os.path.dirname(model_path)
 
         self.model_url = "https://huggingface.co/google/gemma-3-270m-it-GGUF/resolve/main/gemma-3-270m-it-Q4_K_M.gguf"
+        self.categories = [
+            "Bills",
+            "Receipts",
+            "Payments",
+            "Work Documents",
+            "Home/Family",
+        ]
 
         self.llm = None
         # We don't load immediately to allow UI to handle download if missing
@@ -71,14 +78,6 @@ class AttachmentClassifier:
             if os.path.exists(self.model_path):
                 os.remove(self.model_path)
             return False
-
-        self.categories = [
-            "Bills",
-            "Receipts",
-            "Payments",
-            "Work Documents",
-            "Home/Family",
-        ]
 
     def classify(self, subject: str, filename: str) -> dict:
         """
