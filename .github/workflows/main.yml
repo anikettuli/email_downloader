@@ -37,7 +37,7 @@ jobs:
           mkdir -p /tmp/llama-arm64
           curl -fL "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-arm64.tar.gz" \
             -o /tmp/llama-arm64.tar.gz
-          tar -xzf /tmp/llama-arm64.tar.gz -C /tmp/llama-arm64 --no-same-owner
+          tar -xzf /tmp/llama-arm64.tar.gz -C /tmp/llama-arm64 --no-same-owner || true
           find /tmp/llama-arm64 -name "llama-cli" -exec cp {} bin/llama-cli-arm64 \;
           
           # Download x64 binary for Intel Macs
@@ -45,12 +45,16 @@ jobs:
           mkdir -p /tmp/llama-x64
           curl -fL "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-x64.tar.gz" \
             -o /tmp/llama-x64.tar.gz
-          tar -xzf /tmp/llama-x64.tar.gz -C /tmp/llama-x64 --no-same-owner
+          tar -xzf /tmp/llama-x64.tar.gz -C /tmp/llama-x64 --no-same-owner || true
           find /tmp/llama-x64 -name "llama-cli" -exec cp {} bin/llama-cli-x64 \;
           
           chmod +x bin/*
           echo "Binaries downloaded:"
           ls -la bin/
+          
+          # Verify both binaries exist
+          test -f bin/llama-cli-arm64 || { echo "ERROR: ARM64 binary not found"; exit 1; }
+          test -f bin/llama-cli-x64 || { echo "ERROR: x64 binary not found"; exit 1; }
 
 
       - name: Setup Build Environment
