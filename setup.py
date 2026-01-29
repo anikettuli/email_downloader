@@ -3,7 +3,16 @@ import os
 import glob
 
 APP = ["src/gui.py"]
-DATA_FILES = []
+
+# Include llama.cpp binaries if they exist (built by CI)
+bin_files = []
+if os.path.exists("bin"):
+    bin_files = glob.glob("bin/llama-cli-*")
+
+DATA_FILES = [
+    ("bin", bin_files) if bin_files else ("bin", []),
+]
+
 OPTIONS = {
     "argv_emulation": True,
     "iconfile": "app_icon.icns",
@@ -27,7 +36,6 @@ OPTIONS = {
         "googleapiclient",
         "requests",
         "urllib3",
-        "llama_cpp",
         "dateutil",
     ],
     "excludes": [
@@ -58,6 +66,8 @@ OPTIONS = {
         "shutil",
         "subprocess",
         "argparse",
+        "platform",
+        "tarfile",
         "google.auth",
         "google.auth.transport.requests",
         "google.oauth2.credentials",
@@ -70,3 +80,4 @@ setup(
     options={"py2app": OPTIONS},
     setup_requires=["py2app"],
 )
+

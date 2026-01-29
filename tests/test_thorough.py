@@ -140,38 +140,52 @@ class TestAttachmentDownloader:
 
 
 class TestClassifier:
-    @patch("classifier.Llama")
-    def test_classification_logic(self, mock_llama_cls):
+    @patch("subprocess.run")
+    def test_classification_logic(self, mock_subprocess):
         from classifier import AttachmentClassifier
 
-        # Mock model file existence
+        # Mock subprocess output simulating llama-cli response
+        mock_subprocess.return_value = MagicMock(
+            returncode=0,
+            stdout='"category": "Bills", "reasoning": "Invoice found"}',
+            stderr=""
+        )
+
         with patch("os.path.exists", return_value=True):
             classifier = AttachmentClassifier(model_path="fake.gguf")
-
-            mock_llm = mock_llama_cls.return_value
-            mock_llm.return_value = {
-                "choices": [
-                    {"text": '"category": "Bills", "reasoning": "Invoice found"}'}
-                ]
-            }
-
             result = classifier.classify("Your Bill", "invoice.pdf")
             assert result["category"] == "Bills"
             assert "Invoice" in result["reasoning"]
 
-    @patch("classifier.Llama")
-    def test_malformed_json_recovery(self, mock_llama_cls):
+    @patch("subprocess.run")
+    def test_malformed_json_recovery(self, mock_subprocess):
         from classifier import AttachmentClassifier
+
+        # Response without closing brace - our code adds it
+        mock_subprocess.return_value = MagicMock(
+            returncode=0,
+            stdout='"category": "Receipts", "reasoning": "Bought stuff"',
+            stderr=""
+        )
 
         with patch("os.path.exists", return_value=True):
             classifier = AttachmentClassifier(model_path="fake.gguf")
-            mock_llm = mock_llama_cls.return_value
-            # Missing braces but we add them in code
-            mock_llm.return_value = {
-                "choices": [
-                    {"text": '"category": "Receipts", "reasoning": "Bought stuff"'}
-                ]
-            }
-
             result = classifier.classify("Store", "receipt.jpg")
             assert result["category"] == "Receipts"
+
+    @patch("subprocess.run")
+    def test_subprocess_error_handling(self, mock_subprocess):
+        from classifier import AttachmentClassifier
+
+        # Simulate llama-cli failure
+        mock_subprocess.return_value = MagicMock(
+            returncode=1,
+            stdout="",
+            stderr="model failed to load"
+        )
+
+        with patch("os.path.exists", return_value=True):
+            classifier = AttachmentClassifier(model_path="fake.gguf")
+            result = classifier.classify("Test", "file.pdf")
+            assert result["category"] == "Other"
+            assert "error" in result["reasoning"].lower()
