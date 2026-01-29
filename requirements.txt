@@ -13,3 +13,4 @@ python-dateutil
 pytest
 pytest-mock
 llama-cpp-python
+requests

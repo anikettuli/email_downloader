@@ -285,32 +285,62 @@ class EmailDownloaderApp(ctk.CTk):
             self.log("Error: Lookback value must be a number.")
             return
 
-        # Update config
-        enabled_sources = []
-        if self.gmail_var.get():
-            enabled_sources.append("gmail")
-        if self.outlook_var.get():
-            enabled_sources.append("outlook")
-        if self.apple_var.get():
-            enabled_sources.append("apple_mail")
-        self.config["enabled_sources"] = enabled_sources
-        self.config["enabled_categories"] = [
-            cat for cat, var in self.cat_vars.items() if var.get()
-        ]
-
         self.fetch_btn.configure(state="disabled")
         self.progress_bar.set(0)
-        self.progress_bar.configure(mode="indeterminate")
-        self.progress_bar.start()
 
-        self.log(f"Starting Scan: {val} {unit} lookback")
+        # Start model check/download thread first
         threading.Thread(
-            target=self._run_download, args=(int(val), unit), daemon=True
+            target=self._ensure_model_and_run, args=(int(val), unit), daemon=True
         ).start()
+
+    def _ensure_model_and_run(self, value, unit):
+        try:
+            # Initialize downloader/classifier if not done
+            if not self.downloader:
+                self.downloader = AttachmentDownloader(self.config)
+
+            # Check model
+            if not os.path.exists(self.downloader.classifier.model_path):
+                self.log("Model missing. Starting download (approx 180MB)...")
+                self.progress_bar.configure(mode="determinate")
+
+                def update_progress(p):
+                    self.after(0, lambda: self.progress_bar.set(p))
+
+                success = self.downloader.classifier.ensure_model_exists(
+                    progress_callback=update_progress
+                )
+                if not success:
+                    self.log("Error: Failed to download classification model.")
+                    return
+                self.log("Model downloaded and loaded.")
+
+            # Update config
+            enabled_sources = []
+            if self.gmail_var.get():
+                enabled_sources.append("gmail")
+            if self.outlook_var.get():
+                enabled_sources.append("outlook")
+            if self.apple_var.get():
+                enabled_sources.append("apple_mail")
+            self.config["enabled_sources"] = enabled_sources
+            self.config["enabled_categories"] = [
+                cat for cat, var in self.cat_vars.items() if var.get()
+            ]
+            self.downloader.config = self.config
+
+            # Run actual download
+            self.progress_bar.configure(mode="indeterminate")
+            self.progress_bar.start()
+            self.log(f"Starting Scan: {value} {unit} lookback")
+            self._run_download(value, unit)
+
+        except Exception as e:
+            self.log(f"Setup Error: {e}")
+            self.fetch_btn.configure(state="normal")
 
     def _run_download(self, value, unit):
         try:
-            self.downloader = AttachmentDownloader(self.config)
 
             class UIHandler(logging.Handler):
                 def __init__(self, log_func):

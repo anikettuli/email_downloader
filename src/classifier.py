@@ -1,6 +1,8 @@
 import os
 import logging
 import json
+import requests
+from tqdm import tqdm
 from llama_cpp import Llama
 
 logger = logging.getLogger(__name__)
@@ -11,19 +13,64 @@ class AttachmentClassifier:
         if model_path is None:
             # Default to models directory relative to this file
             base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            model_path = os.path.join(
-                base_path, "models", "gemma-3-270m-it-Q4_K_M.gguf"
+            self.models_dir = os.path.join(base_path, "models")
+            self.model_path = os.path.join(
+                self.models_dir, "gemma-3-270m-it-Q4_K_M.gguf"
             )
-
-        if not os.path.exists(model_path):
-            logger.error(f"Model file not found at {model_path}")
-            self.llm = None
         else:
-            logger.info(f"Loading Gemma 3 model from {model_path}...")
+            self.model_path = model_path
+            self.models_dir = os.path.dirname(model_path)
+
+        self.model_url = "https://huggingface.co/google/gemma-3-270m-it-GGUF/resolve/main/gemma-3-270m-it-Q4_K_M.gguf"
+
+        self.llm = None
+        # We don't load immediately to allow UI to handle download if missing
+        if os.path.exists(self.model_path):
+            self._load_model()
+
+    def _load_model(self):
+        try:
+            logger.info(f"Loading Gemma 3 model from {self.model_path}...")
             self.llm = Llama(
-                model_path=model_path, n_ctx=2048, n_threads=4, verbose=False
+                model_path=self.model_path, n_ctx=2048, n_threads=4, verbose=False
             )
             logger.info("Model loaded successfully.")
+        except Exception as e:
+            logger.error(f"Failed to load model: {e}")
+            self.llm = None
+
+    def ensure_model_exists(self, progress_callback=None):
+        """Downloads the model if it doesn't exist."""
+        if os.path.exists(self.model_path):
+            if not self.llm:
+                self._load_model()
+            return True
+
+        os.makedirs(self.models_dir, exist_ok=True)
+        logger.info(f"Downloading model from {self.model_url}...")
+
+        try:
+            response = requests.get(self.model_url, stream=True)
+            response.raise_for_status()
+            total_size = int(response.headers.get("content-length", 0))
+
+            with open(self.model_path, "wb") as f:
+                downloaded = 0
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        if progress_callback:
+                            progress_callback(downloaded / total_size)
+
+            logger.info("Download complete.")
+            self._load_model()
+            return True
+        except Exception as e:
+            logger.error(f"Download failed: {e}")
+            if os.path.exists(self.model_path):
+                os.remove(self.model_path)
+            return False
 
         self.categories = [
             "Bills",
