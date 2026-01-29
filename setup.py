@@ -22,7 +22,7 @@ OPTIONS = {
         "imap_tools",
         "yaml",
         "customtkinter",
-        "PIL",
+        "rumps",
         "google.auth",
         "google_auth_oauthlib",
         "googleapiclient",
@@ -31,6 +31,7 @@ OPTIONS = {
         "urllib3",
         "llama_cpp",
     ],
+    "excludes": ["PyInstaller", "PyQt5", "PyQt6", "PySide2", "PySide6"],
     "includes": [
         "os",
         "sys",
