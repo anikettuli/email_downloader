@@ -6,20 +6,18 @@
     <string>com.anike.emaildownloader</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/home/anike/.gemini/antigravity/scratch/email_downloader/venv/bin/python</string>
-        <string>/home/anike/.gemini/antigravity/scratch/email_downloader/src/main.py</string>
-        <string>--config</string>
-        <string>/home/anike/.gemini/antigravity/scratch/email_downloader/config.yaml</string>
+        <string>/usr/local/bin/EmailDownloader.app/Contents/MacOS/EmailDownloader</string>
     </array>
     <key>StartInterval</key>
     <integer>3600</integer>
     <key>RunAtLoad</key>
     <true/>
-    <key>WorkingDirectory</key>
-    <string>/home/anike/.gemini/antigravity/scratch/email_downloader</string>
+    <key>KeepAlive</key>
+    <true/>
     <key>StandardErrorPath</key>
-    <string>/home/anike/.gemini/antigravity/scratch/email_downloader/downloader_error.log</string>
+    <string>/tmp/com.anike.emaildownloader.err</string>
     <key>StandardOutPath</key>
-    <string>/home/anike/.gemini/antigravity/scratch/email_downloader/downloader_output.log</string>
+    <string>/tmp/com.anike.emaildownloader.out</string>
 </dict>
 </plist>
+

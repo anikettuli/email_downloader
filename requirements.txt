@@ -9,3 +9,6 @@ google-auth-httplib2
 google-api-python-client
 customtkinter
 pyinstaller
+python-dateutil
+pytest
+pytest-mock
