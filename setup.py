@@ -29,7 +29,6 @@ OPTIONS = {
         "urllib3",
         "llama_cpp",
         "dateutil",
-        "tqdm",
     ],
     "excludes": [
         "PyInstaller",

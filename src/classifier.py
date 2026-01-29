@@ -2,7 +2,6 @@ import os
 import logging
 import json
 import requests
-from tqdm import tqdm
 from llama_cpp import Llama
 
 logger = logging.getLogger(__name__)
