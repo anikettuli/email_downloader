@@ -23,7 +23,6 @@ OPTIONS = {
         "yaml",
         "customtkinter",
         "rumps",
-        "google",
         "google_auth_oauthlib",
         "googleapiclient",
         "requests",
@@ -40,6 +39,9 @@ OPTIONS = {
         "datetime",
         "pathlib",
         "sqlite3",
+        "google.auth",
+        "google.auth.transport.requests",
+        "google.oauth2.credentials",
     ],
 }
 
