@@ -34,17 +34,19 @@ jobs:
           
           # Download ARM64 binary for Apple Silicon
           echo "Downloading llama.cpp ARM64 binary..."
+          mkdir -p /tmp/llama-arm64
           curl -fL "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-arm64.tar.gz" \
             -o /tmp/llama-arm64.tar.gz
-          tar -xzf /tmp/llama-arm64.tar.gz -C /tmp
-          cp /tmp/build/bin/llama-cli bin/llama-cli-arm64
+          tar -xzf /tmp/llama-arm64.tar.gz -C /tmp/llama-arm64 --no-same-owner
+          find /tmp/llama-arm64 -name "llama-cli" -exec cp {} bin/llama-cli-arm64 \;
           
           # Download x64 binary for Intel Macs
           echo "Downloading llama.cpp x64 binary..."
+          mkdir -p /tmp/llama-x64
           curl -fL "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-x64.tar.gz" \
             -o /tmp/llama-x64.tar.gz
-          tar -xzf /tmp/llama-x64.tar.gz -C /tmp
-          cp /tmp/build/bin/llama-cli bin/llama-cli-x64
+          tar -xzf /tmp/llama-x64.tar.gz -C /tmp/llama-x64 --no-same-owner
+          find /tmp/llama-x64 -name "llama-cli" -exec cp {} bin/llama-cli-x64 \;
           
           chmod +x bin/*
           echo "Binaries downloaded:"
