@@ -380,8 +380,3 @@ class EmailDownloaderApp(ctk.CTk):
 if __name__ == "__main__":
     app = EmailDownloaderApp()
     app.mainloop()
-
-
-if __name__ == "__main__":
-    app = EmailDownloaderApp()
-    app.mainloop()

@@ -224,7 +224,7 @@ class AttachmentDownloader:
                         save anAttachment in savePath
                         set end of resultList to (msgID & "||" & msgSubject & "||" & dateStr & "||" & attName & "||" & savePath)
                     end try
-                repeat
+                end repeat
             end repeat
             return resultList
         end tell
@@ -261,7 +261,7 @@ class AttachmentDownloader:
                 # Parse date
                 try:
                     dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-                except:
+                except ValueError:
                     dt = datetime.now()
 
                 # Classification
